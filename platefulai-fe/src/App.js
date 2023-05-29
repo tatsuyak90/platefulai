@@ -1,6 +1,4 @@
 import React, { useState } from 'react'
-// import logo from './logo.svg'
-import './App.css'
 
 function App() {
   return (
@@ -30,7 +28,7 @@ const MealPlanForm = () => {
       calsPerDay: calories,
     }
 
-    fetch('http://localhost:3000/mealPlan', {
+    fetch('http://localhost:3001/mealPlan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
