@@ -7,6 +7,8 @@ try it out
 ```
 cd platefulai/platefulai-api
 npm i
-ANTHROPIC_API_KEY=your_key_here node index.js
+# here, you need to create a `.env` file in the platefulai-api folder with contents `ANTHROPIC_API_KEY=your_key_here`
+# once that is done, run:
+node index.js
 ```
 - run the frontend: navigate to platefulai/platefulai-fe, run `npm i && npm start`
