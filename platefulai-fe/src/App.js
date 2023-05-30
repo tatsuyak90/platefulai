@@ -1,14 +1,28 @@
 import React, { useState } from 'react'
 
 function App() {
+  const [output, setOutput] = useState({ output: 'notAsked' })
   return (
     <div className="App">
-      <MealPlanForm />
+      <MealPlanForm setOutput={setOutput} />
+      <MealPlan plan={output} />
     </div>
   )
 }
 
-const MealPlanForm = () => {
+const MealPlan = ({ plan }) => {
+  if (plan.output === 'notAsked') {
+    return <></>
+  } else if (plan.output === 'loading') {
+    return <div>Loading, please wait...</div>
+  } else if (plan.output === 'error') {
+    return <div>An error occurred: {JSON.stringify(plan.error)}</div>
+  } else if (plan.output === 'loaded') {
+    return <div>{JSON.stringify(plan.data, null, 2)}</div>
+  }
+}
+
+const MealPlanForm = ({ setOutput }) => {
   const [persons, setPersons] = useState(1)
   const [days, setDays] = useState(4)
   const [meals, setMeals] = useState(3)
@@ -18,6 +32,7 @@ const MealPlanForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    setOutput({ output: 'loading' })
 
     const formData = {
       persons,
@@ -34,12 +49,8 @@ const MealPlanForm = () => {
       body: JSON.stringify(formData),
     })
       .then((response) => response.json())
-      .then((data) => {
-        console.log('Response from server:', data);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      })
+      .then((data) => setOutput({ output: 'loaded', data }))
+      .catch((error) => setOutput({ output: 'error', error }))
   }
 
   return (
