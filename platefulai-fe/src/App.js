@@ -18,16 +18,58 @@ const MealPlan = ({ plan }) => {
   } else if (plan.output === 'error') {
     return <div>An error occurred: {JSON.stringify(plan.error)}</div>
   } else if (plan.output === 'loaded') {
-    return <div>{JSON.stringify(plan.data, null, 2)}</div>
+    return (
+      <div>
+        <ShoppingList list={plan.data.shoppingList} />
+        {splitArrayEveryN(plan.data.mealsPerDay, plan.data.meals)
+          .map((dayMeals, i) => <DayPlan dayNumber={i} recipes={dayMeals} />)
+        }
+      </div>
+    )
   }
 }
+
+const splitArrayEveryN = (n, arr) =>
+  arr.length === 0
+    ? []
+    : arr.length < n
+    ? [arr]
+    : [arr.slice(0,n), ...splitArrayEveryN(n, arr.slice(n))]
+
+const DayPlan = ({ dayNumber, recipes }) => (
+  <div>
+    <h2>Day {dayNumber + 1}</h2>
+    {recipes.map((recipe) => (
+      <div>
+        <h3>{recipe.recipeName} ({recipe.calories} cals)</h3>
+        <div>
+          <h4>Ingredients</h4>
+          <ul>
+            {recipe.ingredients.map((ingr) => <li>{ingr}</li>)}
+          </ul>
+        </div>
+        <div>
+          <h4>Instructions</h4>
+          {recipe.instructions}
+        </div>
+      </div>
+    ))}
+  </div>
+)
+
+const ShoppingList = ({ list }) => (
+  <div>
+    <h2>Your shopping list</h2>
+    <div>{list}</div>
+  </div>
+)
 
 const MealPlanForm = ({ setOutput }) => {
   const [persons, setPersons] = useState(1)
   const [days, setDays] = useState(4)
-  const [meals, setMeals] = useState(3)
-  const [calories, setCalories] = useState(2000)
-  const [dietaryRestrictions, setDietaryRestrictions] = useState('')
+  const [mealsPerDay, setMealsPerDay] = useState(3)
+  const [calsPerDay, setCalsPerDay] = useState(2000)
+  const [restrictions, setRestrictions] = useState('')
   const [ingredients, setIngredients] = useState('')
 
   const handleSubmit = (e) => {
@@ -36,11 +78,11 @@ const MealPlanForm = ({ setOutput }) => {
 
     const formData = {
       persons,
-      restrictions: dietaryRestrictions,
+      restrictions,
       ingredients,
       days,
-      mealsPerDay: meals,
-      calsPerDay: calories,
+      mealsPerDay,
+      calsPerDay,
     }
 
     fetch('http://localhost:3001/mealPlan', {
@@ -82,12 +124,10 @@ const MealPlanForm = ({ setOutput }) => {
 
       <label>
         Meals per day:
-        <select value={meals} onChange={(e) => setMeals(parseInt(e.target.value))}>
+        <select value={mealsPerDay} onChange={(e) => setMealsPerDay(parseInt(e.target.value))}>
           <option value={1}>1</option>
           <option value={2}>2</option>
           <option value={3}>3</option>
-          <option value={4}>4</option>
-          <option value={5}>5</option>
         </select>
       </label>
       <br />
@@ -96,8 +136,8 @@ const MealPlanForm = ({ setOutput }) => {
         Calories per day:
         <input
           type="number"
-          value={calories}
-          onChange={(e) => setCalories(parseInt(e.target.value))}
+          value={calsPerDay}
+          onChange={(e) => setCalsPerDay(parseInt(e.target.value))}
           min={800}
           max={4000}
         />
@@ -108,8 +148,8 @@ const MealPlanForm = ({ setOutput }) => {
         Dietary restrictions:
         <input
           type="text"
-          value={dietaryRestrictions}
-          onChange={(e) => setDietaryRestrictions(e.target.value)}
+          value={restrictions}
+          onChange={(e) => setRestrictions(e.target.value)}
           placeholder="e.g. vegan, seafood allergy, no pork, etc."
         />
       </label>

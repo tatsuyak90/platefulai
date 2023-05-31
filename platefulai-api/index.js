@@ -59,7 +59,7 @@ app.post("/mealPlan", async (req, res) => {
   const shoppingList = await getCompletion(shoppingListPrompt)
   console.log('SHOPPING LIST RECEIVED:')
   console.log(shoppingList)
-  res.json({ meals, shoppingList })
+  res.json({ meals, shoppingList, mealsPerDay: input.mealsPerDay })
 })
 
 app.listen(port, () => {
@@ -252,10 +252,12 @@ Example shopping list:
 1 egg carton
 2 cans of beans
 
-Output shopping list ONLY, do NOT write anything else.
+Output shopping list ONLY, do NOT write anything else like "Here's the shopping list".
 
 [ACTUAL INGREDIENT LIST]
 ${neededIngredients.join('\n')}
+
+Output shopping list ONLY, do NOT write anything else like "Here's the shopping list.".
 
 [ACTUAL SHOPPING LIST]
 `
