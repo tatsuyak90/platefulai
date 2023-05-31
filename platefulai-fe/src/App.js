@@ -1,40 +1,87 @@
 import React, { useState } from 'react'
+import platefulAiLogo from './plateful.png'
 
-function App() {
+const App = () => {
   const [output, setOutput] = useState({ output: 'notAsked' })
   return (
-    <div className="App">
-      <MealPlanForm setOutput={setOutput} />
-      <MealPlan plan={output} />
+    <div
+      style={{
+        fontFamily: "'Signika', sans-serif",
+        fontWeight: 400,
+        width: '100%',
+        maxWidth: '600px',
+        margin: 'auto',
+        fontSize: '18px',
+        background: 'rgba(255,255,255,0.3)',
+        borderRadius: '8px',
+        minHeight: 'calc(100vh - 25px)',
+        padding: '0 10px',
+      }}
+    >
+      <Header />
+      <div style={{ padding: '0 10px' }}>
+        <div style={{ margin: '40px 0 20px' }}>
+          Not sure what to cook this week? Ask our AI assistant to generate a meal plan and shopping list for you.
+        </div>
+        <MealPlanForm setOutput={setOutput} />
+        <MealPlan plan={output} />
+      </div>
     </div>
   )
 }
+export default App
+
+// PAGE COMPONENTS
+
+const Header = () => (
+  <div style={{ margin: '10px auto' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: '20px' }}>
+      <img
+        src={platefulAiLogo}
+        alt="PlatefulAI logo"
+        style={{ width: '90px', height: 'auto', display: 'block', marginRight: '20px' }}
+      />
+      <div style={{ fontStyle: 'italic', fontWeight: 500 }}>
+        <div style={{ paddingLeft: '10px' }}>“Why do the work yourself?<br /></div>
+        <div>Let him cook.”</div>
+      </div>
+    </div>
+  </div>
+)
 
 const MealPlan = ({ plan }) => {
-  if (plan.output === 'notAsked') {
-    return <></>
-  } else if (plan.output === 'loading') {
-    return <div>Loading, please wait...</div>
-  } else if (plan.output === 'error') {
-    return <div>An error occurred: {JSON.stringify(plan.error)}</div>
-  } else if (plan.output === 'loaded') {
-    return (
-      <div>
-        <ShoppingList list={plan.data.shoppingList} />
-        {splitArrayEveryN(plan.data.mealsPerDay, plan.data.meals)
-          .map((dayMeals, i) => <DayPlan dayNumber={i} recipes={dayMeals} />)
+  return (
+    <div style={{ marginTop: '30px' }}>
+      {(() => {
+        if (plan.output === 'notAsked') {
+          return <></>
+        } else if (plan.output === 'loading') {
+          return (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                Our AI is working, please wait...
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+                <div style={{ margin: 'auto' }} class="lds-dual-ring"></div>
+              </div>
+            </div>
+          )
+        } else if (plan.output === 'error') {
+          return <div>An error occurred: {JSON.stringify(plan.error)}</div>
+        } else if (plan.output === 'loaded') {
+          return (
+            <div>
+              <ShoppingList list={plan.data.shoppingList} />
+              {splitArrayEveryN(plan.data.mealsPerDay, plan.data.meals)
+                .map((dayMeals, i) => <DayPlan dayNumber={i} recipes={dayMeals} />)
+              }
+            </div>
+          )
         }
-      </div>
-    )
-  }
+      })()}
+    </div>
+  )
 }
-
-const splitArrayEveryN = (n, arr) =>
-  arr.length === 0
-    ? []
-    : arr.length < n
-    ? [arr]
-    : [arr.slice(0,n), ...splitArrayEveryN(n, arr.slice(n))]
 
 const DayPlan = ({ dayNumber, recipes }) => (
   <div>
@@ -60,7 +107,9 @@ const DayPlan = ({ dayNumber, recipes }) => (
 const ShoppingList = ({ list }) => (
   <div>
     <h2>Your shopping list</h2>
-    <div>{list}</div>
+    <ul>
+      {list.split('\n').map((item) => <li>{item}</li>)}
+    </ul>
   </div>
 )
 
@@ -96,79 +145,130 @@ const MealPlanForm = ({ setOutput }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Number of persons to feed:
-        <select value={persons} onChange={(e) => setPersons(parseInt(e.target.value))}>
-          <option value={1}>1</option>
-          <option value={2}>2</option>
-          <option value={3}>3</option>
-          <option value={4}>4</option>
-        </select>
-      </label>
-      <br />
-
-      <label>
-        Number of days:
-        <select value={days} onChange={(e) => setDays(parseInt(e.target.value))}>
-          <option value={1}>1</option>
-          <option value={2}>2</option>
-          <option value={3}>3</option>
-          <option value={4}>4</option>
-          <option value={5}>5</option>
-          <option value={6}>6</option>
-          <option value={7}>7</option>
-        </select>
-      </label>
-      <br />
-
-      <label>
-        Meals per day:
-        <select value={mealsPerDay} onChange={(e) => setMealsPerDay(parseInt(e.target.value))}>
-          <option value={1}>1</option>
-          <option value={2}>2</option>
-          <option value={3}>3</option>
-        </select>
-      </label>
-      <br />
-
-      <label>
-        Calories per day:
-        <input
-          type="number"
-          value={calsPerDay}
-          onChange={(e) => setCalsPerDay(parseInt(e.target.value))}
-          min={800}
-          max={4000}
+    <div style={{ margin: 'auto' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0 20px' }}>
+        <NumSelect
+          label="How many people are you cooking for?"
+          min={1}
+          max={4}
+          setVal={setPersons}
+          val={persons}
         />
-      </label>
-      <br />
-
-      <label>
-        Dietary restrictions:
-        <input
-          type="text"
-          value={restrictions}
-          onChange={(e) => setRestrictions(e.target.value)}
-          placeholder="e.g. vegan, seafood allergy, no pork, etc."
+        <NumSelect
+          label="How many days are you stocking up for?"
+          min={1}
+          max={5}
+          setVal={setDays}
+          val={days}
         />
-      </label>
-      <br />
-
-      <label>
-        Ingredients I already have and want to use:
-        <input
-          type="text"
-          value={ingredients}
-          onChange={(e) => setIngredients(e.target.value)}
-          placeholder="e.g. 1 whole chicken, 1kg potatoes"
+        <NumSelect
+          label="How many meals a day?"
+          min={1}
+          max={4}
+          setVal={setMealsPerDay}
+          val={mealsPerDay}
         />
-      </label>
-      <br />
-
-      <button type="submit">Submit</button>
-    </form>
+      </div>
+      <SliderInput label="Calories per day" val={calsPerDay} setVal={setCalsPerDay} />
+      <TextInput
+        label="Do you have any dietary restrictions or other requirements?"
+        val={restrictions}
+        setVal={setRestrictions}
+        placeholder="vegan, no seafood, must use chicken, ..."
+      />
+      <TextInput
+        label="What ingredients do you have in stock already?"
+        val={ingredients}
+        setVal={setIngredients}
+        placeholder="5 porkchops, 1kg potatoes, ..."
+      />
+      <Btn label="Get my meal plan!" onClick={handleSubmit} />
+    </div>
   )
 }
 
-export default App
+// HELPER COMPONENTS
+
+const Btn = ({ label, onClick }) => (
+  <div
+    onClick={onClick}
+    style={{
+      background: '#f2d9ab',
+      display: 'inline-block',
+      padding: '5px 10px',
+      borderRadius: '8px',
+      cursor: 'pointer',
+    }}
+  >
+    {label}
+  </div>
+)
+
+const NumSelect = ({ label, min, max, setVal, val }) => (
+  <div style={{ margin: '10px 0' }}>
+    <div>{label}</div>
+    <div
+      style={{
+        marginTop: '5px',
+        display: 'flex',
+        cursor: 'pointer',
+      }}
+    >
+      {range(min, max).map((n, i) => (
+        <div
+          onClick={() => setVal(n)}
+          style={{
+            color: val === n ? 'unset' : '#5A5A5A',
+            padding: '0.25em 0.4em',
+            background: val === n ? '#F2D9AB' : '#EAE7D8'
+          }}
+        >
+          {n}
+        </div>
+      ))}
+    </div>
+  </div>
+)
+
+const TextInput = ({ label, placeholder, val, setVal }) => (
+  <div style={{ margin: '10px 0' }}>
+    <div style={{ display: 'flex', gap: '0 8px', marginBottom: '7px' }}>
+      <div>{label}</div>
+    </div>
+    <textarea
+      value={val}
+      onChange={(e) => setVal(e.target.value)}
+      placeholder={placeholder}
+      cols={40}
+      rows={3}
+    />
+  </div>
+)
+
+const SliderInput = ({ label, val, setVal }) => (
+  <div style={{ margin: '10px 0' }}>
+    <div style={{ display: 'flex', gap: '0 8px', marginBottom: '7px' }}>
+      <div>{label}: {val}</div>
+    </div>
+    <input
+      type="range"
+      value={val}
+      onChange={(e) => setVal(parseInt(e.target.value))}
+      min={800}
+      max={4000}
+      step={50}
+    />
+  </div>
+)
+
+// HELPER FUNCTIONS
+
+const range = (min, max) => [...Array(max + 1 - min)].map((_,i) => i + min)
+
+const splitArrayEveryN = (n, arr) =>
+  arr.length === 0
+    ? []
+    : arr.length < n
+    ? [arr]
+    : [arr.slice(0,n), ...splitArrayEveryN(n, arr.slice(n))]
+
