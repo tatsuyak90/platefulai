@@ -83,12 +83,22 @@ const MealPlan = ({ plan }) => {
   )
 }
 
+const ShoppingList = ({ list }) => (
+  <div>
+    <h2>Your shopping list</h2>
+    <ul>
+      {list.split('\n').map((item) => <li>{item}</li>)}
+    </ul>
+  </div>
+)
+
 const DayPlan = ({ dayNumber, recipes }) => (
   <div>
     <h2>Day {dayNumber + 1}</h2>
     {recipes.map((recipe) => (
-      <div>
-        <h3>{recipe.recipeName} ({recipe.calories} cals)</h3>
+      <Collapsible
+        label={`${recipe.recipeName} (${recipe.calories} cals)`}
+      >
         <div>
           <h4>Ingredients</h4>
           <ul>
@@ -99,23 +109,26 @@ const DayPlan = ({ dayNumber, recipes }) => (
           <h4>Instructions</h4>
           {recipe.instructions}
         </div>
-      </div>
+      </Collapsible>
     ))}
   </div>
 )
 
-const ShoppingList = ({ list }) => (
-  <div>
-    <h2>Your shopping list</h2>
-    <ul>
-      {list.split('\n').map((item) => <li>{item}</li>)}
-    </ul>
-  </div>
-)
+const Collapsible = ({ label, children }) => {
+  const [folded, setFolded] = useState(true)
+  return (
+    <div>
+      <h3 onClick={() => setFolded((old) => !old)} style={{ cursor: 'pointer' }}>
+        {folded ? '+' : '-'} {label}
+      </h3>
+      {folded ? <></> : children}
+    </div>
+  )
+}
 
 const MealPlanForm = ({ setOutput }) => {
   const [persons, setPersons] = useState(1)
-  const [days, setDays] = useState(4)
+  const [days, setDays] = useState(2)
   const [mealsPerDay, setMealsPerDay] = useState(3)
   const [calsPerDay, setCalsPerDay] = useState(2000)
   const [restrictions, setRestrictions] = useState('')
@@ -146,7 +159,7 @@ const MealPlanForm = ({ setOutput }) => {
 
   return (
     <div style={{ margin: 'auto' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0 20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
         <NumSelect
           label="How many people are you cooking for?"
           min={1}
